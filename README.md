@@ -1,0 +1,1 @@
+# vite-require-images-to-import
