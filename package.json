@@ -1,0 +1,36 @@
+{
+  "name": "vite-require-images-to-import",
+  "version": "0.0.1",
+  "description": "require images to import",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rosong1/vite-require-images-to-import.git"
+  },
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "require",
+    "image"
+  ],
+  "author": {
+    "name": "rosong",
+    "email": "rousong111@gmail.com"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rosong1/vite-require-images-to-import/issues"
+  },
+  "homepage": "https://github.com/rosong1/vite-require-images-to-import#readme",
+  "devDependencies": {
+    "@types/node": "^16.11.6",
+    "typescript": "^4.4.4",
+    "vite": "^2.6.13"
+  },
+  "dependencies": {
+    "@babel/core": "^7.16.0"
+  }
+}
