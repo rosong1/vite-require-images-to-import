@@ -1,18 +1,14 @@
 {
-    "compilerOptions": {
-      "outDir": "lib",
-      "module": "commonjs",
-      "target": "es6",
-      "strictNullChecks": true,
-      "moduleResolution": "node",
-      "esModuleInterop": true,
-      "jsx": "react",
-      "declaration": true,
-    },
-    "includes": [
-      "src/*"
-    ],
-    "exclude": [
-        "examples"
-    ]
-  }
+  "compilerOptions": {
+    "outDir": "lib",
+    "module": "commonjs",
+    "target": "es6",
+    "strictNullChecks": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "jsx": "react",
+    "declaration": true
+  },
+  "includes": ["src/*"],
+  "exclude": ["examples"]
+}
