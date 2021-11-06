@@ -2,15 +2,14 @@
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
 import HelloWorld from "./components/HelloWorld.vue";
-// import logo from "./assets/logo.png";
-const logo2 = require("./assets/logo.png");
+import logo2 from "./assets/logo.png";
+
+// const logo2 = require("./assets/logo.png");
 </script>
-<script lang="ts">
-console.log("a script1~");
-</script>
+
 <template>
   <img alt="Vue logo" :src="logo2" />
-  <img alt="Vue logo" :src="require('./favicon.svg')" style="width: 100px" />
+  <img alt="Vue logo" :src="require('./favicon.svg')" style="width: 150px" />
   <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" />
 </template>
 

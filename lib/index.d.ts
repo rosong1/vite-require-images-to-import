@@ -1,3 +1,7 @@
 import { Plugin } from "vite";
-export declare const metaType: string[];
-export default function viteRequireImageToImport(): Plugin[];
+declare type TOptions = {
+    metaType?: string[];
+    jsxOptions?: any;
+};
+export default function viteRequireImageToImport(options?: TOptions): Plugin[];
+export {};

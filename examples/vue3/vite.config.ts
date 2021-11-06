@@ -4,5 +4,5 @@ import requireImgToImport from '../../lib'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [requireImgToImport(), vue()]
+  plugins: [requireImgToImport(), vue() ]
 })

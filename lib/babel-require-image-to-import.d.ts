@@ -8,11 +8,12 @@
  * import _img_uid from "./img/icon1.webp";
  * const img1 = _img_uid;
  */
+export declare const defaultMetaType: string[];
 export default function requireImgToImport({ types: t }: {
     types: any;
 }): {
     name: string;
     visitor: {
-        Program(path: any): void;
+        Program(path: any, state: any): void;
     };
 };

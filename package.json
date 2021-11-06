@@ -1,6 +1,6 @@
 {
   "name": "vite-require-images-to-import",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "require images to import",
   "main": "lib/index.js",
   "scripts": {
@@ -27,11 +27,16 @@
   "homepage": "https://github.com/rosong1/vite-require-images-to-import#readme",
   "devDependencies": {
     "@types/node": "^16.11.6",
+    "rimraf": "^3.0.2",
     "typescript": "^4.4.4",
     "vite": "^2.6.13"
   },
   "dependencies": {
     "@babel/core": "^7.16.0",
+    "@babel/plugin-proposal-class-properties": "^7.16.0",
+    "@babel/plugin-proposal-decorators": "^7.16.0",
+    "@babel/plugin-transform-typescript": "^7.16.1",
+    "@vue/babel-preset-jsx": "^1.2.4",
     "@vue/compiler-sfc": "^3.2.21"
   }
 }

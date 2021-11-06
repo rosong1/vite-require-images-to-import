@@ -1,16 +1,16 @@
-import { useState } from 'react'
+import { useState, FC } from 'react'
 const logo = require('./logo.svg')
 const favicon = require('./favicon.svg')
 import './App.css'
 
-function App() {
+const App: FC<any> = () => {
   const [count, setCount] = useState(0)
 
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <p>Hello Vite + React!</p>
+        <p>Hello Vite + React</p>
         <img src={favicon} className="App-logo" alt="favicon" />
         <p>
           <button type="button" onClick={() => setCount((count) => count + 1)}>

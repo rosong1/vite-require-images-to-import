@@ -1,19 +1,43 @@
 import { Plugin } from "vite";
-import requireImgToImport from "./babel-require-image-to-import";
+import requireImgToImport, { defaultMetaType } from "./babel-require-image-to-import";
 import * as babel from "@babel/core";
 const vueCompiler = require("@vue/compiler-sfc");
 
-export const metaType = [".jpg", ".jpeg", ".webp", ".svg", ".png"];
+type TOptions = {
+  metaType?: string[];
+  jsxOptions?: any;
+}
 
-export default function viteRequireImageToImport(): Plugin[] {
+export default function viteRequireImageToImport(options?: TOptions): Plugin[] {
+  const metaType = options?.metaType ? options?.metaType : defaultMetaType;
+  const babelPlugins: any[][] = [
+    ["@babel/plugin-proposal-decorators", { "legacy": true }],
+    [
+      "@babel/plugin-proposal-class-properties",
+      { loose: true },
+    ],
+    [requireImgToImport, { metaType }],
+
+  ];
+
   const basePlugin: Plugin = {
     name: "vite-require-image-to-import",
     enforce: "pre",
     async transform(code, id) {
       if (/node_modules/g.test(id)) return null;
+
+      // like App.vue?vue&type=style&index=1&scoped=true&lang.ts
+      if (id.indexOf('.vue') !== -1) return null;
+
       if (/\.(mjs|[tj]sx?)$/.test(id)) {
         const result = await babel.transformAsync(code, {
-          plugins: [requireImgToImport],
+          plugins:
+            (/\.tsx?/.test(id) ? [[
+              '@babel/plugin-transform-typescript',
+              { isTSX: true, allowExtensions: true, allowDeclareFields: true },
+            ]] : []).concat(babelPlugins),
+          sourceFileName: id,
+          filename: id,
         });
         return {
           code: result.code,
@@ -23,42 +47,51 @@ export default function viteRequireImageToImport(): Plugin[] {
       return null;
     },
   };
-  const Vue3plugin: Plugin = {
-    name: "vite-require-image-to-import:vue3",
+  const vuePlugin: Plugin = {
+    name: "vite-require-image-to-import:vue",
     async transform(code, id) {
       if (/node_modules/g.test(id)) return null;
-      if (/App\.vue$/.test(id)) {
+      if (/\.vue$/.test(id)) {
         const parseResult = vueCompiler.parse(code);
         const descriptor = parseResult.descriptor;
 
-        // 1. scriptSetup
-        const scriptSetupResult = descriptor?.scriptSetup?.content
-          ? await babel.transformAsync(descriptor?.scriptSetup.content, {
-              plugins: [requireImgToImport],
+        const handleScript = async (scriptDescriptor) => {
+          if (!scriptDescriptor?.content) return '';
+
+          const scriptResult = scriptDescriptor.content
+            ? await babel.transformAsync(scriptDescriptor.content, {
+              presets: [['@vue/babel-preset-jsx', options?.jsxOptions]],
+              sourceFileName: id,
+              filename: id,
+              plugins: (/tsx?/.test(scriptDescriptor.lang) ? [[
+                '@babel/plugin-transform-typescript',
+                { isTSX: scriptDescriptor.lang === 'tsx', allowExtensions: true, allowDeclareFields: true, onlyRemoveTypeImports: true },
+              ]] : []).concat(babelPlugins),
             })
-          : { code: "" };
-        const scriptSetupResultTag = setAttr({
-          type: "script",
-          attrs: descriptor?.scriptSetup!.attrs,
-          children: `\n${scriptSetupResult.code}`,
-        });
+            : { code: '' };
+          return scriptResult.code ? setAttr({
+            type: "script",
+            attrs: scriptDescriptor!.attrs,
+            children: `\n${scriptResult.code}`,
+          }) : '';
+        };
+
+        // TODO: @babel/plugin-transform-typescript will add `export {}` at last, but why
+        const fixTypescriptWillAddExport = (scriptSetupTag: string) => {
+          return scriptSetupTag.replace(/export \{\};/g, '')
+        };
+
+        // 1. scriptSetup
+        const scriptSetupResultTag = fixTypescriptWillAddExport(await handleScript(descriptor?.scriptSetup));
 
         // 2. script
-        const scriptResult = descriptor?.script?.content
-          ? await babel.transformAsync(descriptor?.script?.content, {
-              plugins: [requireImgToImport],
-            })
-          : { code: "" };
-        const scriptResultTag = setAttr({
-          type: "script",
-          attrs: descriptor?.script!.attrs,
-          children: `\n${scriptResult.code}`,
-        });
+        const scriptResultTag = await handleScript(descriptor?.script);
 
         // 3. template
-        const templateResult = descriptor?.template!.content.replace(
+        const templateResult = descriptor?.template?.content?.replace?.(
           /(require\(([^)]+)\))/g,
           (__, $1, $2) => {
+            // TODO: support build path
             const replaceResult = `${getRequireFilePage(id, $2).replace(
               /['"]/g,
               ""
@@ -68,7 +101,7 @@ export default function viteRequireImageToImport(): Plugin[] {
               : $1;
           }
         );
-        const templateTag = setAttr({
+        const templateTag = !templateResult ? '' : setAttr({
           type: "template",
           attrs: descriptor?.template!.attrs,
           children: templateResult,
@@ -85,12 +118,13 @@ export default function viteRequireImageToImport(): Plugin[] {
           )
           .join("\n");
 
+        // TODO: custom block
         const resultCode = [
           scriptSetupResultTag,
           scriptResultTag,
           templateTag,
           stylesTag,
-        ].join("\n");
+        ].filter(Boolean).join("\n");
 
         return {
           code: resultCode,
@@ -100,7 +134,7 @@ export default function viteRequireImageToImport(): Plugin[] {
       return null;
     },
   };
-  return [basePlugin, Vue3plugin];
+  return [basePlugin, vuePlugin];
 }
 
 function setAttr(params: {
@@ -108,12 +142,11 @@ function setAttr(params: {
   attrs: { [key: string]: any };
   children?: string;
 }) {
-  const flatAttrs = Object.entries(params.attrs).reduce((acc, [key, value]) => {
+  const flatAttrs = Object.entries(params?.attrs || {}).reduce((acc, [key, value]) => {
     return (acc += ` ${key}${value === true ? "" : `="${value}"`}`);
   }, "");
-  return `<${params.type}${flatAttrs}>${params.children || ""}</${
-    params.type
-  }>`;
+  return `<${params.type}${flatAttrs}>${params.children || ""}</${params.type
+    }>`;
 }
 
 /**
