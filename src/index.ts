@@ -24,7 +24,7 @@ export default function viteRequireImageToImport(options?: TOptions): Plugin[] {
     name: "vite-require-image-to-import",
     enforce: "pre",
     async transform(code, id) {
-      if (/node_modules/g.test(id)) return null;
+      if (/node_modules/g.test(id) || code.indexOf('require(') === -1) return null;
 
       // like App.vue?vue&type=style&index=1&scoped=true&lang.ts
       if (id.indexOf('.vue') !== -1) return null;
@@ -50,7 +50,7 @@ export default function viteRequireImageToImport(options?: TOptions): Plugin[] {
   const vuePlugin: Plugin = {
     name: "vite-require-image-to-import:vue",
     async transform(code, id) {
-      if (/node_modules/g.test(id)) return null;
+      if (/node_modules/g.test(id) || code.indexOf('require(') === -1) return null;
       if (/\.vue$/.test(id)) {
         const parseResult = vueCompiler.parse(code);
         const descriptor = parseResult.descriptor;
